@@ -1,0 +1,8 @@
+/build/
+/learning/01_compile/build/
+/learning/01_compile/*.ii
+/learning/01_compile/*.s
+/learning/01_compile/*.o
+/learning/01_compile/add
+/learning/01_compile/add_staged
+/learning/01_compile/add_bug
