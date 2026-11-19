@@ -23,6 +23,8 @@ target_include_directories(mlir_module_demo SYSTEM PRIVATE
 )
 
 target_link_libraries(mlir_module_demo PRIVATE
+    MLIRArithDialect
+    MLIRFuncDialect
     MLIRIR
     MLIRSupport
 )
