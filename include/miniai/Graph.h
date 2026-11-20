@@ -26,7 +26,8 @@ private:
 using NodeId = std::size_t;
 
 enum class NodeKind {
-    Input
+    Input,
+    Add
 };
 
 struct Node {
@@ -34,11 +35,14 @@ struct Node {
     NodeKind kind;
     std::string name;
     Shape shape;
+    std::vector<NodeId> inputs;
 };
 
 class Graph {
 public:
     NodeId input(std::string name, Shape shape);
+    NodeId add(NodeId lhs, NodeId rhs);
+
     const Node &node(NodeId id) const;
     std::size_t nodeCount() const { return nodes_.size(); }
 

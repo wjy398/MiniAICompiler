@@ -40,15 +40,33 @@ NodeId Graph::input(std::string name, Shape shape) {
     }
 
     for (const Node &existing : nodes_) {
-        if (existing.name == name) {
+        if (existing.kind == NodeKind::Input &&
+            existing.name == name) {
             throw std::invalid_argument(
-                    "Duplicate input name: " + name);
+                "Duplicate input name: " + name);
         }
     }
 
     const NodeId id = nodes_.size();
     nodes_.push_back(
-            Node{id, NodeKind::Input, std::move(name), std::move(shape)});
+        Node{id, NodeKind::Input, std::move(name), std::move(shape), {}});
+    return id;
+}
+
+NodeId Graph::add(NodeId lhs, NodeId rhs) {
+    const Shape &lhsShape = node(lhs).shape;
+    const Shape &rhsShape = node(rhs).shape;
+
+    if (lhsShape.dimensions() != rhsShape.dimensions()) {
+        throw std::invalid_argument(
+            "Add operands must have identical Shapes");
+    }
+
+    Shape outputShape = lhsShape;
+    const NodeId id = nodes_.size();
+
+    nodes_.push_back(
+        Node{id, NodeKind::Add, "", std::move(outputShape), {lhs, rhs}});
     return id;
 }
 

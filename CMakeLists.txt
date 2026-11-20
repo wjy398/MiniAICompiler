@@ -15,5 +15,8 @@ enable_testing()
 
 add_executable(graph_test tests/graph_test.cpp)
 target_link_libraries(graph_test PRIVATE miniai_graph)
-
 add_test(NAME GraphBasics COMMAND graph_test)
+
+add_executable(graph_add_test tests/graph_add_test.cpp)
+target_link_libraries(graph_add_test PRIVATE miniai_graph)
+add_test(NAME GraphAdd COMMAND graph_add_test)
