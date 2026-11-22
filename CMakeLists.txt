@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(MiniAICompiler LANGUAGES CXX)
+project(MiniAICompiler LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -31,3 +31,42 @@ target_link_libraries(miniai_reference PUBLIC miniai_graph)
 add_executable(reference_executor_test tests/reference_executor_test.cpp)
 target_link_libraries(reference_executor_test PRIVATE miniai_reference)
 add_test(NAME ReferenceExecutor COMMAND reference_executor_test)
+
+set(LLVM_DIR "/usr/lib/llvm-20/lib/cmake/llvm" CACHE PATH "LLVM CMake config")
+set(MLIR_DIR "/usr/lib/llvm-20/lib/cmake/mlir" CACHE PATH "MLIR CMake config")
+find_package(LLVM 20.1.8 EXACT REQUIRED CONFIG)
+find_package(MLIR REQUIRED CONFIG)
+add_definitions(${LLVM_DEFINITIONS})
+
+add_library(miniai_irgen lib/IRGen/IRGen.cpp)
+target_include_directories(miniai_irgen SYSTEM PUBLIC
+    ${LLVM_INCLUDE_DIRS}
+    ${MLIR_INCLUDE_DIRS}
+)
+target_link_libraries(miniai_irgen PUBLIC
+    miniai_graph
+    MLIRArithDialect
+    MLIRFuncDialect
+    MLIRLinalgDialect
+    MLIRTensorDialect
+    MLIRBufferizationDialect
+    MLIRMemRefDialect
+    MLIRIR
+    MLIRSupport
+)
+
+add_executable(miniai-ir tools/miniai-ir.cpp)
+target_link_libraries(miniai-ir PRIVATE miniai_irgen)
+
+add_executable(irgen_test tests/irgen_test.cpp)
+target_link_libraries(irgen_test PRIVATE miniai_irgen MLIRParser)
+add_test(NAME IRGeneration COMMAND irgen_test)
+
+add_library(miniai_optimizations lib/Transforms/ElementwiseFusion.cpp)
+target_include_directories(miniai_optimizations PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(miniai_optimizations SYSTEM PUBLIC
+    ${LLVM_INCLUDE_DIRS} ${MLIR_INCLUDE_DIRS})
+target_link_libraries(miniai_optimizations PUBLIC
+    MLIRLinalgTransforms MLIRTransforms MLIRPass
+    MLIRLinalgDialect MLIRArithDialect MLIRFuncDialect MLIRIR MLIRSupport)
+target_link_libraries(miniai-ir PRIVATE miniai_optimizations)

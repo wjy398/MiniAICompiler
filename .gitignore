@@ -7,3 +7,6 @@
 /learning/01_compile/add_staged
 /learning/01_compile/add_bug
 /learning/02_mlir_module/build/
+
+# Python bytecode; generated GPU output stays under build/
+__pycache__/
