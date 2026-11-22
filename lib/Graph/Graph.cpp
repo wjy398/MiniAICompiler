@@ -54,20 +54,48 @@ NodeId Graph::input(std::string name, Shape shape) {
 }
 
 NodeId Graph::add(NodeId lhs, NodeId rhs) {
+    return binary(NodeKind::Add, lhs, rhs);
+}
+
+NodeId Graph::mul(NodeId lhs, NodeId rhs) {
+    return binary(NodeKind::Mul, lhs, rhs);
+}
+
+NodeId Graph::binary(NodeKind kind, NodeId lhs, NodeId rhs) {
     const Shape &lhsShape = node(lhs).shape;
     const Shape &rhsShape = node(rhs).shape;
 
     if (lhsShape.dimensions() != rhsShape.dimensions()) {
+        const char *operation = kind == NodeKind::Add ? "Add" : "Mul";
         throw std::invalid_argument(
-            "Add operands must have identical Shapes");
+            std::string(operation) + " operands must have identical Shapes");
     }
 
     Shape outputShape = lhsShape;
     const NodeId id = nodes_.size();
-
     nodes_.push_back(
-        Node{id, NodeKind::Add, "", std::move(outputShape), {lhs, rhs}});
+        Node{id, kind, "", std::move(outputShape), {lhs, rhs}});
     return id;
+}
+
+NodeId Graph::relu(NodeId input) {
+    Shape outputShape = node(input).shape;
+    const NodeId id = nodes_.size();
+    nodes_.push_back(
+        Node{id, NodeKind::ReLU, "", std::move(outputShape), {input}});
+    return id;
+}
+
+void Graph::setOutput(NodeId id) {
+    (void)node(id);
+    output_ = id;
+}
+
+NodeId Graph::output() const {
+    if (!output_) {
+        throw std::logic_error("Graph output has not been selected");
+    }
+    return *output_;
 }
 
 const Node &Graph::node(NodeId id) const {
