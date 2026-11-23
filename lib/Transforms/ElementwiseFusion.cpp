@@ -118,6 +118,10 @@ std::size_t countGenerics(mlir::ModuleOp module) {
 }
 } // namespace
 
+std::unique_ptr<mlir::Pass> createElementwiseFusionPass() {
+    return std::make_unique<ElementwiseFusionPass>();
+}
+
 OptimizationStats optimizeModule(mlir::ModuleOp module, bool enableFusion) {
     OptimizationStats stats;
     stats.genericBefore = countGenerics(module);
@@ -127,7 +131,7 @@ OptimizationStats optimizeModule(mlir::ModuleOp module, bool enableFusion) {
     manager.addPass(mlir::createCSEPass());
     if (enableFusion)
         manager.addNestedPass<mlir::func::FuncOp>(
-            std::make_unique<ElementwiseFusionPass>());
+            createElementwiseFusionPass());
     manager.addPass(mlir::createCanonicalizerPass());
     manager.addPass(mlir::createCSEPass());
     if (mlir::failed(manager.run(module)))

@@ -1,0 +1,20 @@
+name: CPU build and correctness
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  cpu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install pinned CPU development environment
+        run: bash scripts/setup_cpu.sh
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --parallel 2
+      - name: CPU regression
+        run: ctest --test-dir build --output-on-failure
+      - name: Native output versus NumPy
+        run: MINIAI_PYTHON="$HOME/.venvs/miniai-cpu/bin/python" bash run_project.sh validate

@@ -70,3 +70,8 @@ target_link_libraries(miniai_optimizations PUBLIC
     MLIRLinalgTransforms MLIRTransforms MLIRPass
     MLIRLinalgDialect MLIRArithDialect MLIRFuncDialect MLIRIR MLIRSupport)
 target_link_libraries(miniai-ir PRIVATE miniai_optimizations)
+
+add_executable(fusion_policy_test tests/fusion_policy_test.cpp)
+target_link_libraries(fusion_policy_test PRIVATE
+    miniai_irgen miniai_optimizations MLIRParser)
+add_test(NAME FusionPolicy COMMAND fusion_policy_test)
